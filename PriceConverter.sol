@@ -1,22 +1,61 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "./PriceConverter.sol";
 
-library PriceConverter{
-    function getPrice() internal view returns (uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-        (, int256 price, , , ) = priceFeed.latestRoundData();
-        return uint256(price * 1e10);
+contract FundMe {
+    using PriceConverter for uint256;
+    uint256 public minimumUsd = 50 * 10 ** 18;
+    address[] public funders;
+    mapping(address => uint256) public  addressToAmountFunded;
+
+    //this will store the owner address who deploy contract
+    address public owner;
+    constructor(){
+        owner = msg.sender;
     }
 
-    function getVersion() internal view returns (uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-        return priceFeed.version();
+
+    function fund() public payable {
+        uint256 ethAmountInUsd = msg.value.getConversionRate();
+        require(ethAmountInUsd >= minimumUsd, "Please send at least 50 USDT worth of ETH");
+        funders.push(msg.sender);
+        addressToAmountFunded[msg.sender] += msg.value;
+        // rest of your code
     }
 
-    function getConversionRate(uint256 ethAmount) internal  view returns (uint256) {
-        uint256 ethPrice = getPrice();
-        uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;
-        return ethAmountInUsd;
+    function withdraw() public{
+       
+        //make the amount of all user to 0
+        for(uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++){
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+
+        //reset the array by adding the new address array with 0 object
+        funders = new address[](0);
+
+        //withdraw the funds
+
+        // there is 3 methods to withdraw funds 
+
+        //transfer
+        // payable(msg.sender).transfer(address(this).balance);
+
+        //send
+        // bool sendSuccess = payable(msg.sender).send(address(this).balance);
+        // require(sendSuccess, "Send failed");
+
+        //call
+        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess,"Call failed");
+
     }
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "sender is not owner only owner can withdraw fund");
+        // _; mean 1st do do reuire line and then do the rest of the code 
+        _;
+    }
+
+    
 }

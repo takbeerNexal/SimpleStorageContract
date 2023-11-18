@@ -24,7 +24,7 @@ contract FundMe {
     }
 
     function withdraw() public{
-        require(msg.sender == owner, "sender is not owner only owner can withdraw fund");
+       
         //make the amount of all user to 0
         for(uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++){
             address funder = funders[funderIndex];
@@ -49,6 +49,12 @@ contract FundMe {
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess,"Call failed");
 
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "sender is not owner only owner can withdraw fund");
+        // _; mean 1st do do reuire line and then do the rest of the code 
+        _;
     }
 
     
