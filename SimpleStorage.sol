@@ -12,6 +12,7 @@ contract SimpleStorage {
     uint256 number;
     uint256 favoriteNumber;
 
+// map the array like we use in javascript
     mapping(string => uint256) public nameToFavoriteNumber;
 
     struct People{
