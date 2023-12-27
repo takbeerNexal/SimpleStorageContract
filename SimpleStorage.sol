@@ -33,10 +33,12 @@ contract SimpleStorage {
     }
 
 
+// store the value in blockchain
     function store(uint256 _favoriteNumber) public {
        favoriteNumber = _favoriteNumber;
     }
 
+   // print the store value
     function retrieve()public view returns(uint256) {
         return favoriteNumber;
     }
