@@ -20,6 +20,7 @@ contract SimpleStorage {
         string name;
     }
 
+// array of people
     People[] public people;
 
     // function store(uint256 _favoriteNumber) public{
